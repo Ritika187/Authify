@@ -28,7 +28,7 @@ public class ProfileController {
     @ResponseStatus(HttpStatus.CREATED)
     public ProfileResponse register(@Valid @RequestBody ProfileRequest request){
         ProfileResponse response = profileService.createProfile(request);
-       //TODO: SEND WELLCOME EMAIL
+       
        return response;
         
     }

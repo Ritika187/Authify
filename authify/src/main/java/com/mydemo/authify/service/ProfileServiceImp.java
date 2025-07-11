@@ -1,6 +1,7 @@
 package com.mydemo.authify.service;
 
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,6 +22,8 @@ public class ProfileServiceImp implements ProfileService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private final EmailService emailService;
    @Override
    public ProfileResponse createProfile(ProfileRequest request){
     UserEntity newProfile = convertToUserEntity(request);
@@ -61,4 +64,53 @@ public class ProfileServiceImp implements ProfileService {
                      .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
                      return convertToProfileResponse(existingUser);
     }
+
+    @Override
+    public void sendResetOtp(String email) {
+       UserEntity existingEntity= userRepository.findByEmail(email)
+                 .orElseThrow(() -> new UsernameNotFoundException("User not found: "+email));
+
+    //Generate 6 digit OTP
+    String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+
+    //calculate expiry time (current time + 15 minutes in milliseconds)
+    long expiryTime = System.currentTimeMillis() + (15 * 60 * 1000);
+
+    //Update the profile/user
+    existingEntity.setResetOtp(otp);
+    existingEntity.setResetOtpExpireAt(expiryTime);
+
+
+    //Save into the database
+    userRepository.save(existingEntity);
+    try{
+        //Todo: send the reset otp email
+        emailService.sendResetOtpEmail(existingEntity.getEmail(), otp);
+
+    }catch(Exception ex){
+        throw new RuntimeException("Unable to send email");
+    }
+    }
+
+    @Override
+    public void resetPassword(String email, String otp, String newPassword) {
+        
+       UserEntity existingUser= userRepository.findByEmail(email)
+                       .orElseThrow(() -> new UsernameNotFoundException("User not found: "+email));
+
+        if(existingUser.getResetOtp()== null || !existingUser.getResetOtp().equals(otp)){
+              throw new RuntimeException("Invalid OTP");
+        }  
+
+        if(existingUser.getResetOtpExpireAt() < System.currentTimeMillis()){
+            throw new RuntimeException("OTP Expired");
+        }
+
+        existingUser.setPassword(passwordEncoder.encode(newPassword));
+        existingUser.setResetOtp(null);
+        existingUser.setResetOtpExpireAt(0L);
+
+
+        userRepository.save(existingUser);
+     }
 }

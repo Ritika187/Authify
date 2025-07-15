@@ -57,7 +57,7 @@ public class SecurityConfig {
     }
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration config = new CorsConfiguration();
-       config.setAllowedOrigins(List.of("http://localhost:3000"));
+      config.setAllowedOriginPatterns(List.of("http://localhost:*")); 
        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
        config.setAllowCredentials(true);
@@ -66,6 +66,7 @@ public class SecurityConfig {
        source.registerCorsConfiguration("/**", config);    
        return source;
     }
+    
 
     @Bean 
     public AuthenticationManager authenticationManager(){

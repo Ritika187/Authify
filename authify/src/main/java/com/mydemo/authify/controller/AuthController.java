@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,6 +29,7 @@ import com.mydemo.authify.service.AppUserDetailsService;
 import com.mydemo.authify.service.ProfileService;
 import com.mydemo.authify.util.JwtUtil;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -107,6 +108,46 @@ public class AuthController {
           catch(Exception e){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()); 
           }
+    }
+   
+    @PostMapping("/send-otp")
+    public void sendVerifyOtp(@CurrentSecurityContext(expression = "authentication?.name") String email){
+     try{
+        profileService.sendOtp(email);
+     }
+     catch(Exception e){
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+     }
+    }
+
+    @PostMapping("/verify-otp")
+    public void verifyEmail(@RequestBody Map<String, Object> request, @CurrentSecurityContext(expression = "authentication?.name") String email){
+       if(request.get("otp").toString() == null){
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing details ");
+       }
+
+        try{
+         profileService.verifyOtp(email, request.get("otp").toString());
+     }  catch(Exception e){
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+     }  
+    }
+    
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response){
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                   .httpOnly(true)
+                   .secure(false)
+                   .path("/")
+                   .maxAge(0)
+                   .sameSite("Strict")
+                   .build();
+
+            return ResponseEntity.ok()
+                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                 .body("Logged out successfully!");
+
+
     }
        
 }

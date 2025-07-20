@@ -1,11 +1,10 @@
 #🔐 Authify – Authentication System
-A secure full-stack authentication application built using React.js for the frontend and Spring Boot (with Spring Security + JWT) for the backend.
+###A secure full-stack authentication application built using React.js for the frontend and Spring Boot (with Spring Security + JWT) for the backend.
 
-🚀 Tech Stack
-Frontend (React)
-React.js
-
-Axios
+###🚀 Tech Stack
+##Frontend (React)
+- *React.js*
+- *Axios*
 
 React Router DOM
 

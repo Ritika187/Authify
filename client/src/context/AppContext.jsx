@@ -10,9 +10,12 @@ export const AppContextProvider = (props) =>{
 
     axios.defaults.withCredentials = true;
 
+
     const backendURL = AppConstants.BACKEND_URL;
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userData, setUserData] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(null);
+    const [userData, setUserData] = useState(null);
+
+    
     const getUserData = async () =>{
         try{
             const response = await axios.get(backendURL+"/profile");
@@ -30,7 +33,7 @@ export const AppContextProvider = (props) =>{
 
     const getAuthState = async () =>{
         try{
-            const response = await axios.get(backendURL+"/is-authenticated");
+             const response = await axios.get(backendURL + "/is-authenticated", { withCredentials: true });
             if(response.status === 200 && response.data === true){
                 setIsLoggedIn(true);
                await getUserData();
@@ -38,17 +41,17 @@ export const AppContextProvider = (props) =>{
             else{
                 setIsLoggedIn(false);
             }
-        }catch(error){
-            if(error.response){
-                const msg = error.response.data?.message || "Authentication check failed";
-                toast.error(msg);
-            }
-            else{
-                toast.error(error.message);
-            }
-            setIsLoggedIn(false);
         }
+        catch (error) {
+    if (error.response && error.response.status === 401) {
+      // User is not logged in — don't treat it like a fatal error
+      setIsLoggedIn(false);
+    } else {
+      // Log other errors (like server down)
+      console.error("Auth check failed:", error);
     }
+  } 
+        };
 
     useEffect(() =>{
         getAuthState();

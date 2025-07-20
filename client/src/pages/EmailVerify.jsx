@@ -38,7 +38,7 @@ const EmailVerify = () => {
     }
      
     const handleVerify = async () => {
-       const otp = inputRef.current = inputRef.current.map(input => input.value).join("");
+       const otp = inputRef.current.map(input => input.value).join("");
        if(otp.length !==6){
         toast.error("Please enter all 6 digits of the OTP.");
         return;
@@ -98,8 +98,7 @@ const EmailVerify = () => {
                 </div>
                 <button className="btn btn-primary w-100 fw-semibold" disabled={loading} onClick={handleVerify}>
                     {loading ? "Verifying..." : "Verify email"}
-                </button>
-            </div>
+                </button> </div>
 
         </div>
     );
